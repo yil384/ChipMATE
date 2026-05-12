@@ -1,55 +1,127 @@
-# ChipMATE Inference
+# ChipMATE
 
-Multi-agent inference framework for RTL generation with cross-verification.
+Multi-agent inference framework for RTL code generation with LLM cross-verification.
 
-This is the **inference framework released alongside the ChipMATE paper**
-(*ChipMATE: Multi-Agent Training via Reinforcement Learning for Enhanced RTL
-Generation*). It implements the multi-agent workflow for RTL generation. 
+- **Website:** https://chipmate.picasso-lab.com
+- **Models:** [core12345/ChipMATE-V-4B](https://huggingface.co/core12345/ChipMATE-V-4B) · [core12345/ChipMATE-P-4B](https://huggingface.co/core12345/ChipMATE-P-4B) · [core12345/ChipMATE-V-9B](https://huggingface.co/core12345/ChipMATE-V-9B) · [core12345/ChipMATE-P-9B](https://huggingface.co/core12345/ChipMATE-P-9B)
 
-| Model              | VerilogEval V2 pass@1 |
-|--------------------|-----------------------|
-| ChipMATE-Agents-4B | **75.0%**             |
-| ChipMATE-Agents-9B | **80.1%**             |
+ChipMATE pairs a **Verilog-generating agent** with a **Python reference-model agent** that mutually verify each other's outputs on random stimuli. The two agents iteratively refine their code through cross-verification feedback until they agree — no golden testbench, no human spec annotations, no API dependency at deployment time.
 
-## What this repo gives you
+## Benchmark results
 
-- `chipmate.run_problem(...)` — programmatic entry point for the multi-agent
-  loop. One call per problem; returns the best Verilog implementation, the
-  paired Python reference model, the per-turn cross-verify trace, and a
-  `matched` flag.
-- `chipmate` CLI — batch runner over a JSONL of problems.
-- A pluggable backend layer: any OpenAI-compatible endpoint (OpenAI,
-  DeepSeek, Gemini's OpenAI shim, a local `vllm serve` instance, …) or
-  Anthropic's native Claude API.
-- `cross_verify` — the standalone port-aware random-stimulus harness used
-  by the loop. It compiles the DUT via Icarus Verilog and executes the
-  Python reference model in an isolated subprocess.
+Pass@1 / pass@5 (%) for Verilog generation, taken from Table 1 of our paper:
+
+| Model | Size | VerilogEval V2 | RTLLM V2 | ChipBench-SC | CVDP cid03 |
+|---|---:|---:|---:|---:|---:|
+| GPT-4o | – | 64.1 / 73.7 | 56.5 / 70.3 | 20.0 / 33.3 | 39.0 / 40.4 |
+| Claude Opus 4.7 | – | **86.9** / **90.4** | 64.8 / 68.0 | 31.3 / 46.7 | 42.8 / 47.9 |
+| DeepSeek Coder | 236B | 68.5 / 80.8 | 67.6 / 70.0 | 16.7 / 30.0 | 22.3 / 37.2 |
+| DeepSeek V4 | 1.6T | 67.3 / 80.1 | 58.8 / 66.0 | 18.0 / 36.7 | 21.5 / 34.6 |
+| DeepSeek R1 | 671B | 77.5 / 84.7 | 64.7 / 75.8 | 26.7 / 40.0 | 20.7 / 42.1 |
+| CodeV-R1 (distill) | 7B | 65.2 / 75.2 | 57.2 / 71.9 | 13.3 / 26.7 | 26.2 / 42.1 |
+| CodeV-R1 | 7B | 68.8 / 78.2 | 68.0 / **78.2** | 30.0 / 40.0 | 26.8 / 43.3 |
+| Qwen3.5-4B (base) | 4B | 41.7 / 60.9 | 34.3 / 49.7 | 6.7 / 10.0 | 11.8 / 13.9 |
+| Qwen3.5-9B (base) | 9B | 48.5 / 66.6 | 36.1 / 57.8 | 13.3 / 20.0 | 13.3 / 21.5 |
+| **ChipMATE-Verilog-4B** | 4B | 67.4 / 71.8 | 68.0 / 74.6 | 26.7 / 33.3 | 24.7 / 39.2 |
+| **ChipMATE-Agents-4B** | 4B | 75.0 / 76.3 | 74.6 / 77.3 | **33.3** / 43.3 | 32.1 / 41.3 |
+| **ChipMATE-Verilog-9B** | 9B | 75.3 / 77.6 | 71.9 / 75.8 | 30.0 / 36.7 | 28.1 / 42.1 |
+| **ChipMATE-Agents-9B** | 9B | **80.1** / 82.4 | **75.8** / 77.3 | **36.7** / 43.3 | **40.4** / **44.6** |
+
+`ChipMATE-Verilog-X` is the single-agent baseline (just the Verilog agent). `ChipMATE-Agents-X` is the full multi-agent system you get when you run this repo — V and P agents cooperating via cross-verification.
 
 ## Install
 
 ```bash
-pip install chipmate-inference
-
-# Anthropic backend is optional:
-pip install "chipmate-inference[anthropic]"
+git clone git@github.com:zhongkaiyu/ChipMATE.git
+cd ChipMATE
+pip install -e .
+# Optional: enable the Claude/Anthropic backend
+pip install -e ".[anthropic]"
 ```
 
-You also need `iverilog` (and its `vvp` runtime) on `PATH`. On Debian/Ubuntu:
+You also need `iverilog` (with `vvp`) on `PATH` — the cross-verification harness compiles Verilog DUTs with Icarus Verilog. On Debian/Ubuntu:
 
 ```bash
 sudo apt-get install iverilog
 ```
 
-Or use the Docker image, which ships iverilog out of the box (see below).
+Or skip the host install and use the [Docker image](#docker), which ships iverilog out of the box.
 
-## Quick start
+## Quickstart
 
-### Option A: hosted LLM API (DeepSeek, OpenAI, Gemini, Claude, …)
+There are two ways to drive ChipMATE. **Option A** is the path described in the paper and produces the headline numbers above. **Option B** is a convenience path for using a hosted LLM as both agents.
+
+---
+
+### Option A. Use our open-source ChipMATE weights on your own GPUs *(reproduces the paper)*
+
+Serve the Verilog agent and the Python reference-model agent as two local OpenAI-compatible endpoints with [vLLM](https://github.com/vllm-project/vllm), then drive them with the ChipMATE loop.
+
+**Step 1 — serve the two agents.** Pick the size you want (4B or 9B). Two GPUs are enough for the 9B pair:
+
+```bash
+# Terminal 1 — Verilog agent on GPU 0
+CUDA_VISIBLE_DEVICES=0 vllm serve core12345/ChipMATE-V-9B --port 8001
+
+# Terminal 2 — Python reference-model agent on GPU 1
+CUDA_VISIBLE_DEVICES=1 vllm serve core12345/ChipMATE-P-9B --port 8002
+```
+
+For the 4B pair, replace `9B` with `4B`. Both fit on a single 24GB consumer GPU.
+
+**Step 2a — run one problem from Python.**
 
 ```python
 from chipmate import make_backend, run_problem
 
-# DeepSeek — the API used to produce the paper's API-based baselines.
+v_backend = make_backend(model="core12345/ChipMATE-V-9B",
+                         base_url="http://localhost:8001/v1", api_key="dummy")
+p_backend = make_backend(model="core12345/ChipMATE-P-9B",
+                         base_url="http://localhost:8002/v1", api_key="dummy")
+
+result = run_problem(
+    task_id="my_problem",
+    question="Implement a Verilog module that ...",
+    ref_sv="module top_module(input clk, ...);\nendmodule\n",
+    v_backend=v_backend,
+    p_backend=p_backend,
+    # Defaults: n=10 candidate (V,P) pairs per turn, max_turns=5.
+)
+print(result.verilog)             # final Verilog implementation
+print(result.matched)             # True iff cross-verify reached match_rate == 1.0
+```
+
+**Step 2b — reproduce the paper's VerilogEval V2 pass@1 from the command line.**
+
+```bash
+chipmate \
+  --input        examples/verilogeval_v2.jsonl \
+  --out          results/chipmate-agents-9b__verilogeval_v2.jsonl \
+  --provider     openai-compat \
+  --model        core12345/ChipMATE-V-9B \
+  --base-url     http://localhost:8001/v1 \
+  --api-key      dummy \
+  --p-model      core12345/ChipMATE-P-9B \
+  --p-base-url   http://localhost:8002/v1 \
+  --p-api-key    dummy \
+  -n 10 -t 5 \
+  --workers 4
+```
+
+The CLI is just a batch driver around `run_problem`. The input JSONL has one `{task_id, question, ref_sv}` per line — `ref_sv` is reference Verilog whose port list defines the interface (its body is never compared against, only the port declarations are read). Pipe the resulting JSONL through your favorite Verilog testbench to get pass@k.
+
+---
+
+### Option B. Drive ChipMATE with a hosted LLM API (OpenAI / DeepSeek / Claude / Gemini)
+
+If you don't want to host the weights, you can use any frontier API as both agents. This is the path used to produce the API-based rows in the table (GPT-4o, Claude Opus, DeepSeek V4 / R1, …).
+
+**Step 1 — pick a provider and run one problem.**
+
+```python
+from chipmate import make_backend, run_problem
+
+# DeepSeek — speaks the OpenAI Chat-Completions API.
 backend = make_backend(
     provider="openai-compat",
     model="deepseek-chat",
@@ -61,64 +133,26 @@ result = run_problem(
     task_id="my_problem",
     question="Implement a Verilog module that ...",
     ref_sv="module top_module(input clk, ...);\nendmodule\n",
-    v_backend=backend,
-    # n=10, max_turns=5  — defaults from the inference grid sweep
+    v_backend=backend,    # same backend drives both agents
 )
-
-print(result.verilog)            # final Verilog source
-print(result.matched)            # True iff cross-verify reached match_rate == 1.0
-print(result.best_match_rate)    # best agreement observed
+print(result.verilog)
 ```
 
-Endpoints for other providers:
+Other providers share the same interface — just change `provider` / `model` / `base_url`:
 
-| Provider           | `provider`         | `base_url`                                                             |
-|--------------------|--------------------|------------------------------------------------------------------------|
-| OpenAI / GPT       | `openai-compat`    | `https://api.openai.com/v1`                                            |
-| DeepSeek           | `openai-compat`    | `https://api.deepseek.com`                                             |
-| Gemini             | `openai-compat`    | `https://generativelanguage.googleapis.com/v1beta/openai/`             |
-| Anthropic / Claude | `anthropic`        | *(native)*                                                             |
-| Local vLLM server  | `openai-compat`    | `http://localhost:8000/v1`                                             |
+| Provider           | `provider`         | `base_url`                                                       |
+|--------------------|--------------------|------------------------------------------------------------------|
+| OpenAI / GPT       | `openai-compat`    | `https://api.openai.com/v1`                                      |
+| DeepSeek           | `openai-compat`    | `https://api.deepseek.com`                                       |
+| Google Gemini      | `openai-compat`    | `https://generativelanguage.googleapis.com/v1beta/openai/`       |
+| Anthropic / Claude | `anthropic`        | *(native; install `chipmate-inference[anthropic]`)*              |
 
-### Option B: open-source ChipMATE weights on your own GPU
-
-Run a ChipMATE checkpoint locally with [vLLM](https://github.com/vllm-project/vllm),
-which exposes an OpenAI-compatible endpoint:
-
-```bash
-# Verilog agent on GPU 0
-vllm serve core12345/ChipMATE-V-9B --port 8001 &
-# Python reference-model agent on GPU 1
-CUDA_VISIBLE_DEVICES=1 vllm serve core12345/ChipMATE-P-9B --port 8002 &
-```
-
-```python
-from chipmate import make_backend, run_problem
-
-v_backend = make_backend(model="core12345/ChipMATE-V-9B",
-                         base_url="http://localhost:8001/v1", api_key="dummy")
-p_backend = make_backend(model="core12345/ChipMATE-P-9B",
-                         base_url="http://localhost:8002/v1", api_key="dummy")
-
-result = run_problem(
-    task_id="my_problem", question="...", ref_sv="...",
-    v_backend=v_backend, p_backend=p_backend,
-)
-```
-
-Both 4B and 9B variants are released on HuggingFace:
-
-- [core12345/ChipMATE-V-4B](https://huggingface.co/core12345/ChipMATE-V-4B) — Verilog agent, 4B
-- [core12345/ChipMATE-P-4B](https://huggingface.co/core12345/ChipMATE-P-4B) — Python reference-model agent, 4B
-- [core12345/ChipMATE-V-9B](https://huggingface.co/core12345/ChipMATE-V-9B) — Verilog agent, 9B
-- [core12345/ChipMATE-P-9B](https://huggingface.co/core12345/ChipMATE-P-9B) — Python reference-model agent, 9B
-
-### Option C: batch CLI
+**Step 2 — batch via the CLI.** Same `chipmate` command as in Option A, just point it at the hosted endpoint:
 
 ```bash
 chipmate \
-  --input problems.jsonl \
-  --out   results.jsonl \
+  --input    examples/verilogeval_v2.jsonl \
+  --out      results/deepseek__verilogeval_v2.jsonl \
   --provider openai-compat \
   --model    deepseek-chat \
   --base-url https://api.deepseek.com \
@@ -127,31 +161,23 @@ chipmate \
   --workers 4
 ```
 
-Input JSONL shape (one object per line):
-
-```json
-{"task_id": "demo_01", "question": "...natural-language spec...", "ref_sv": "module top_module(...);\nendmodule\n"}
-```
-
-`ref_sv` is only used to read the port list (names, widths, clk/reset
-conventions). Its body is never executed and never compared against.
+---
 
 ## Defaults
 
-`n=10` and `max_turns=5` are the defaults; lower `--n` to cut cost, raise
-`--max-turns` to give the agents more chances to converge on hard problems.
+`n=10` and `max_turns=5` are the defaults. Lower `--n` to cut sampling cost; raise `--max-turns` to give the agents more chances to converge on hard problems.
 
 ## Docker
 
 ```bash
-docker build -t chipmate-inference .
+docker build -t chipmate .
 
 docker run --rm \
   -e DEEPSEEK_API_KEY=sk-... \
   -v "$PWD":/work \
-  chipmate-inference \
-    --input /work/problems.jsonl \
-    --out   /work/results.jsonl \
+  chipmate \
+    --input    /work/problems.jsonl \
+    --out      /work/results.jsonl \
     --provider openai-compat \
     --model    deepseek-chat \
     --base-url https://api.deepseek.com \
@@ -162,17 +188,17 @@ The image ships `iverilog` so you don't need to install it on the host.
 
 ## Citation
 
-If you use this framework, please cite the ChipMATE paper:
-
 ```bibtex
 @inproceedings{chipmate2026,
-  title     = {ChipMATE: Multi-Agent Training via Reinforcement Learning for Enhanced RTL Generation},
-  author    = {ChipMATE authors},
-  booktitle = {Advances in Neural Information Processing Systems},
-  year      = {2026},
-  note      = {Under review}
+  title  = {ChipMATE: Multi-Agent Training via Reinforcement Learning for Enhanced RTL Generation},
+  author = {ChipMATE authors},
+  year   = {2026},
 }
 ```
+
+## Contact
+
+If you have any questions or would like further information, please feel free to contact us at **zhy055@ucsd.edu** and **yil384@ucsd.edu**. You can also visit our homepages for more details about our work: [Zhongkai Yu](https://zhongkaiyu.github.io/) and [Yichen Lin](https://yil384.github.io/).
 
 ## License
 
