@@ -14,7 +14,7 @@ Two backend families are supported:
     To run a downloaded HuggingFace model on your own GPUs, start vLLM as a
     local server, then point the backend at it:
 
-        vllm serve yil384/ChipMATE-V-9B --port 8000
+        vllm serve core12345/ChipMATE-V-9B --port 8000
 
 2.  `anthropic` -- Anthropic's native Messages API for Claude. Selected when
     `provider="anthropic"`. Requires `pip install chipmate-inference[anthropic]`.
@@ -149,7 +149,7 @@ def make_backend(provider: str = "openai-compat", *, model: str,
     ----------
     provider  : "openai-compat" (default) or "anthropic".
     model     : Model id understood by the chosen provider.
-                  - openai-compat: e.g. "deepseek-chat", "gpt-4o", "yil384/ChipMATE-V-9B".
+                  - openai-compat: e.g. "deepseek-chat", "gpt-4o", "core12345/ChipMATE-V-9B".
                   - anthropic:     e.g. "claude-opus-4-7", "claude-haiku-4-5-20251001".
     api_key   : Provider API key. If None, falls back to the SDK's default
                 env var (OPENAI_API_KEY / ANTHROPIC_API_KEY).

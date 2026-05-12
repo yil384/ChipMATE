@@ -5,10 +5,10 @@ Usage::
     # 1. Pick any LLM provider you have access to. Examples:
     #
     #    # Local vLLM serving one of the ChipMATE models:
-    #    vllm serve yil384/ChipMATE-V-9B --port 8000
+    #    vllm serve core12345/ChipMATE-V-9B --port 8000
     #    export CHIPMATE_BASE_URL=http://localhost:8000/v1
     #    export CHIPMATE_API_KEY=dummy
-    #    export CHIPMATE_MODEL=yil384/ChipMATE-V-9B
+    #    export CHIPMATE_MODEL=core12345/ChipMATE-V-9B
     #
     #    # DeepSeek API:
     #    export CHIPMATE_BASE_URL=https://api.deepseek.com

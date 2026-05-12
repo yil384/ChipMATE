@@ -94,17 +94,17 @@ which exposes an OpenAI-compatible endpoint:
 
 ```bash
 # Verilog agent on GPU 0
-vllm serve yil384/ChipMATE-V-9B --port 8001 &
+vllm serve core12345/ChipMATE-V-9B --port 8001 &
 # Python reference-model agent on GPU 1
-CUDA_VISIBLE_DEVICES=1 vllm serve yil384/ChipMATE-P-9B --port 8002 &
+CUDA_VISIBLE_DEVICES=1 vllm serve core12345/ChipMATE-P-9B --port 8002 &
 ```
 
 ```python
 from chipmate import make_backend, run_problem
 
-v_backend = make_backend(model="yil384/ChipMATE-V-9B",
+v_backend = make_backend(model="core12345/ChipMATE-V-9B",
                          base_url="http://localhost:8001/v1", api_key="dummy")
-p_backend = make_backend(model="yil384/ChipMATE-P-9B",
+p_backend = make_backend(model="core12345/ChipMATE-P-9B",
                          base_url="http://localhost:8002/v1", api_key="dummy")
 
 result = run_problem(
@@ -115,10 +115,10 @@ result = run_problem(
 
 Both 4B and 9B variants are released on HuggingFace:
 
-- [yil384/ChipMATE-V-4B](https://huggingface.co/yil384/ChipMATE-V-4B) — Verilog agent, 4B
-- [yil384/ChipMATE-P-4B](https://huggingface.co/yil384/ChipMATE-P-4B) — Python reference-model agent, 4B
-- [yil384/ChipMATE-V-9B](https://huggingface.co/yil384/ChipMATE-V-9B) — Verilog agent, 9B
-- [yil384/ChipMATE-P-9B](https://huggingface.co/yil384/ChipMATE-P-9B) — Python reference-model agent, 9B
+- [core12345/ChipMATE-V-4B](https://huggingface.co/core12345/ChipMATE-V-4B) — Verilog agent, 4B
+- [core12345/ChipMATE-P-4B](https://huggingface.co/core12345/ChipMATE-P-4B) — Python reference-model agent, 4B
+- [core12345/ChipMATE-V-9B](https://huggingface.co/core12345/ChipMATE-V-9B) — Verilog agent, 9B
+- [core12345/ChipMATE-P-9B](https://huggingface.co/core12345/ChipMATE-P-9B) — Python reference-model agent, 9B
 
 ### Option C: batch CLI
 
