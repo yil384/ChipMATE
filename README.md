@@ -145,20 +145,8 @@ conventions). Its body is never executed and never compared against.
 
 ## Defaults
 
-`n=10`, `max_turns=5` are selected from an inference-grid sweep using
-ChipMATE-Agents-4B over VerilogEval V2:
-
-| Config       | turn=1 | turn=2 | turn=3 | turn=4 | turn=5 |
-|--------------|-------:|-------:|-------:|-------:|-------:|
-| BoN=1        |  79.5  |  78.2  |  77.6  |  77.6  |  78.2  |
-| BoN=2        |  77.6  |  77.6  |  78.2  |  78.8  |  78.8  |
-| BoN=5        |  84.6  |  84.6  |  85.3  |  85.3  |  85.3  |
-| **BoN=10**   |**85.9**|  85.3  |  84.6  |  84.0  |**84.0**|
-
-BoN=10 with multi-turn refinement gives near-peak pass@1 (85.9%) while still
-exercising the cross-verification and backtrack mechanisms that the paper
-describes. Lower `--n` for cost; raise `--max-turns` if you want to give the
-agents more chances to converge on hard problems.
+`n=10` and `max_turns=5` are the defaults; lower `--n` to cut cost, raise
+`--max-turns` to give the agents more chances to converge on hard problems.
 
 ## Docker
 
