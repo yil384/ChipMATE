@@ -186,16 +186,6 @@ docker run --rm \
 
 The image ships `iverilog` so you don't need to install it on the host.
 
-## Citation
-
-```bibtex
-@inproceedings{chipmate2026,
-  title  = {ChipMATE: Multi-Agent Training via Reinforcement Learning for Enhanced RTL Generation},
-  author = {ChipMATE authors},
-  year   = {2026},
-}
-```
-
 ## Contact
 
 If you have any questions or would like further information, please feel free to contact us at **zhy055@ucsd.edu** and **yil384@ucsd.edu**. You can also visit our homepages for more details about our work: [Zhongkai Yu](https://zhongkaiyu.github.io/) and [Yichen Lin](https://yil384.github.io/).
