@@ -4,14 +4,7 @@ Multi-agent inference framework for RTL generation with cross-verification.
 
 This is the **inference framework released alongside the ChipMATE paper**
 (*ChipMATE: Multi-Agent Training via Reinforcement Learning for Enhanced RTL
-Generation*, under review at NeurIPS 2026). It implements the final-stage
-multi-agent workflow described in Section 2.2 of the paper: a Verilog agent
-and a Python reference-model agent independently propose candidate
-implementations of the same spec, their outputs are compared on random
-stimuli, and disagreements are fed back as natural-language diagnostics for
-the next turn. No golden testbench is required at inference time.
-
-The same workflow produces the headline numbers in Table 1 of the paper:
+Generation*). It implements the multi-agent workflow for RTL generation. 
 
 | Model              | VerilogEval V2 pass@1 |
 |--------------------|-----------------------|
