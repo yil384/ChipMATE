@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chipmate-inference"
+version = "0.1.0"
+description = "Multi-agent inference framework for RTL generation with cross-verification (ChipMATE)."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.9"
+authors = [{ name = "ChipMATE authors" }]
+keywords = ["rtl", "verilog", "multi-agent", "cross-verification", "code-generation"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+]
+dependencies = [
+    "openai>=1.0",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.34"]
+
+[project.scripts]
+chipmate = "chipmate.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["chipmate*"]
