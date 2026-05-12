@@ -108,7 +108,7 @@ chipmate \
   --workers 4
 ```
 
-The CLI is just a batch driver around `run_problem`. The input JSONL has one `{task_id, question, ref_sv}` per line — `ref_sv` is reference Verilog whose port list defines the interface (its body is never compared against, only the port declarations are read). [`examples/verilogeval_v2.jsonl`](examples/verilogeval_v2.jsonl) ships the first 5 VerilogEval V2 problems in this format as a smoke-test set; swap it for your own JSONL to evaluate at full benchmark scale. Pipe the resulting JSONL through your favorite Verilog testbench to get pass@k.
+The CLI is just a batch driver around `run_problem`. The input JSONL has one `{task_id, question, ref_sv}` per line — `ref_sv` is reference Verilog whose port list defines the interface (its body is never compared against, only the port declarations are read). [`examples/verilogeval_v2.jsonl`](examples/verilogeval_v2.jsonl) ships the full 156-problem VerilogEval V2 set in this format. Pipe the resulting JSONL through your favorite Verilog testbench to get pass@k.
 
 ---
 
