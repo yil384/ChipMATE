@@ -22,9 +22,7 @@ Pass@1 / pass@5 (%) for Verilog generation, taken from Table 1 of our paper:
 | CodeV-R1 | 7B | 68.8 / 78.2 | 68.0 / **78.2** | 30.0 / 40.0 | 26.8 / 43.3 |
 | Qwen3.5-4B (base) | 4B | 41.7 / 60.9 | 34.3 / 49.7 | 6.7 / 10.0 | 11.8 / 13.9 |
 | Qwen3.5-9B (base) | 9B | 48.5 / 66.6 | 36.1 / 57.8 | 13.3 / 20.0 | 13.3 / 21.5 |
-| **ChipMATE-Verilog-4B** | 4B | 67.4 / 71.8 | 68.0 / 74.6 | 26.7 / 33.3 | 24.7 / 39.2 |
 | **ChipMATE-Agents-4B** | 4B | 75.0 / 76.3 | 74.6 / 77.3 | **33.3** / 43.3 | 32.1 / 41.3 |
-| **ChipMATE-Verilog-9B** | 9B | 75.3 / 77.6 | 71.9 / 75.8 | 30.0 / 36.7 | 28.1 / 42.1 |
 | **ChipMATE-Agents-9B** | 9B | **80.1** / 82.4 | **75.8** / 77.3 | **36.7** / 43.3 | **40.4** / **44.6** |
 
 `ChipMATE-Verilog-X` is the single-agent baseline (just the Verilog agent). `ChipMATE-Agents-X` is the full multi-agent system you get when you run this repo — V and P agents cooperating via cross-verification.
