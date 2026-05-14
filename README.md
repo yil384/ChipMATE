@@ -2,12 +2,18 @@
 
 Multi-agent inference framework for RTL code generation with LLM cross-verification.
 
-- **Website:** https://chipmate.picasso-lab.com
+- **Website:** [https://chipmate.picasso-lab.com](https://chipmate.picasso-lab.com)
 - **Models:** [core12345/ChipMATE-V-4B](https://huggingface.co/core12345/ChipMATE-V-4B) · [core12345/ChipMATE-P-4B](https://huggingface.co/core12345/ChipMATE-P-4B) · [core12345/ChipMATE-V-9B](https://huggingface.co/core12345/ChipMATE-V-9B) · [core12345/ChipMATE-P-9B](https://huggingface.co/core12345/ChipMATE-P-9B)
 
-ChipMATE pairs a **Verilog-generating agent** with a **Python reference-model agent** that mutually verify each other's outputs on random stimuli. The two agents iteratively refine their code through cross-verification feedback until they agree — no golden testbench, no human spec annotations, no API dependency at deployment time.
+ChipMATE pairs a **Verilog-generating agent** with a **Python reference-model agent** that mutually verify each other's outputs on random stimuli. The two agents iteratively refine their code through cross-verification feedback until they agree. No golden testbench, no human spec annotations, no API dependency at deployment time.
+
+**No golden testbench.** Many prior RTL generation works rely on a pre-written golden testbench for verification, which is rarely available in real chip design workflows. ChipMATE never uses one. Verification relies entirely on bilateral agreement between the two agents over self-generated random stimuli, making the framework directly applicable to industry settings where only a natural-language specification exists.
+
+**Interface I/O signals.** In real chip design, all port names and bit-widths are formally specified before any RTL implementation begins. Benchmark datasets typically do not provide this. To better reflect industry practice, ChipMATE's prompts are conditioned on a structured interface specification. Since benchmarks do not supply one, we extract the module port declaration from the golden Verilog file. This is the only information read from the golden file; no implementation logic ever reaches the agents.
 
 ## Benchmark results
+...
+
 
 Pass@1 / pass@5 (%) for Verilog generation, taken from Table 1 of our paper:
 
@@ -26,6 +32,7 @@ Pass@1 / pass@5 (%) for Verilog generation, taken from Table 1 of our paper:
 | **ChipMATE-Agents-9B** | 9B | **80.1** / 82.4 | **75.8** / 77.3 | **36.7** / 43.3 | **40.4** / **44.6** |
 
 `ChipMATE-Verilog-X` is the single-agent baseline (just the Verilog agent). `ChipMATE-Agents-X` is the full multi-agent system you get when you run this repo — V and P agents cooperating via cross-verification.
+
 
 ## Install
 
