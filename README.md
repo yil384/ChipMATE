@@ -18,6 +18,7 @@ Pass@1 / pass@5 (%) for Verilog generation, taken from Table 1 of our paper:
 | Model | Size | VerilogEval V2 | RTLLM V2 | ChipBench-SC | CVDP cid03 |
 |---|---:|---:|---:|---:|---:|
 | GPT-4o | – | 64.1 / 73.7 | 56.5 / 70.3 | 20.0 / 33.3 | 39.0 / 40.4 |
+| GPT-5.5 | – | 84.7 / **90.4** | 63.2 / 68.0 | 30.7.0 / 36.7 | 44.0 / 48.7 |
 | Claude Opus 4.7 | – | **86.9** / **90.4** | 64.8 / 68.0 | 31.3 / 46.7 | 42.8 / 47.9 |
 | DeepSeek Coder | 236B | 68.5 / 80.8 | 67.6 / 70.0 | 16.7 / 30.0 | 22.3 / 37.2 |
 | DeepSeek V4 | 1.6T | 67.3 / 80.1 | 58.8 / 66.0 | 18.0 / 36.7 | 21.5 / 34.6 |
